@@ -4,6 +4,7 @@
 import wx
 
 class MainFrame(wx.Frame):
+
     def __init__(self, parent):
 
         wx.Frame.__init__(self, parent, -1, "Hello World", 
@@ -25,6 +26,3 @@ def main():
    
 if __name__ == '__main__':
     main()
-
-
-    
