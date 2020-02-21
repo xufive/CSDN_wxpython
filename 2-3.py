@@ -1,129 +1,96 @@
-#!/usr/bin/env python
-# coding:utf-8
-
-"""
-wxPython鼠标事件例程
-"""
+#-*- coding: utf-8 -*-
 
 import wx
+import win32api
+import sys, os, time
+import threading
 
-APP_TITLE = "Hello World"
+APP_TITLE = u'定时器和线程'
+APP_ICON = 'res/python.ico'
 
-
-class MainFrame(wx.Frame):
-    """主框架"""
-
+class mainFrame(wx.Frame):
+    '''程序主窗口类，继承自wx.Frame'''
+    
     def __init__(self, parent):
-        """
-        主框架构造函数
-
-        :param parent: 父窗口
-        """
-
-        # 初始化父类
-        wx.Frame.__init__(self, parent, -1, APP_TITLE, size=(800, 600), style=wx.DEFAULT_FRAME_STYLE)
-
-        # 初始化面板
-        panel = wx.Panel(self, -1)
-
-        # 初始化窗口控件
-        text = wx.StaticText(panel, -1, "在此区域内进行鼠标操作", pos=(330, 280))
-
-        # 设置状态栏
-        self.sb = wx.StatusBar(self, -1)
-        self.sb.SetFieldsCount(3)               # 将状态栏分为三个部分
-        self.sb.SetStatusWidths([-3, -1, -1])   # 按比例分隔
-
-        self.sb.SetStatusText("就绪", 0)
-        self.sb.SetStatusText("X:---", 1)
-        self.sb.SetStatusText("Y:---", 2)
-
-        self.SetStatusBar(self.sb)
-
-        # 绑定事件
-        panel.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)           # 鼠标左键按下事件
-        panel.Bind(wx.EVT_LEFT_UP, self.OnLeftUP)               # 鼠标左键抬起事件
-        panel.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDclick)       # 鼠标左键双击事件
-
-        panel.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)         # 鼠标右键按下事件
-        panel.Bind(wx.EVT_RIGHT_UP, self.OnRightUP)             # 鼠标右键抬起事件
-        panel.Bind(wx.EVT_RIGHT_DCLICK, self.OnRightDclick)     # 鼠标右键双击事件
-
-        panel.Bind(wx.EVT_MOTION, self.OnMotion)                # 鼠标移动事件
-        panel.Bind(wx.EVT_LEAVE_WINDOW, self.OnLeaveWindow)     # 鼠标移出事件
-        panel.Bind(wx.EVT_MOUSEWHEEL, self.OnMouseWheel)        # 鼠标滚轮事件
-
-    def OnLeftDown(self, evt):
-        """左键按下事件处理"""
-        self.sb.SetStatusText("左键按下", 0)
-
-    def OnLeftUP(self, evt):
-        """左键抬起事件处理"""
-        self.sb.SetStatusText("左键抬起", 0)
-
-    def OnLeftDclick(self, evt):
-        """左键双击事件处理"""
-        self.sb.SetStatusText("左键双击", 0)
-
-    def OnRightDown(self, evt):
-        """右键按下事件处理"""
-        self.sb.SetStatusText("右键按下", 0)
-
-    def OnRightUP(self, evt):
-        """右键抬起事件处理"""
-        self.sb.SetStatusText("右键抬起", 0)
-
-    def OnRightDclick(self, evt):
-        """右键双击事件处理"""
-        self.sb.SetStatusText("右键双击", 0)
-
-    def OnMotion(self, evt):
-        """鼠标移动事件处理"""
-        self.sb.SetStatusText("X:%03d" % evt.x, 1)
-        self.sb.SetStatusText("Y:%03d" % evt.y, 2)
-
-    def OnLeaveWindow(self, evt):
-        """鼠标移出事件处理"""
-        self.sb.SetStatusText("X:---", 1)
-        self.sb.SetStatusText("Y:---", 2)
-
-    def OnMouseWheel(self, evt):
-        """鼠标滚轮事件处理"""
-
-        if evt.WheelRotation > 0:
-            self.sb.SetStatusText("滚轮向上", 0)
-        else:
-            self.sb.SetStatusText("滚轮向下", 0)
-
-
-class MainApp(wx.App):
-    """主应用程序"""
-
+        '''构造函数'''
+        
+        wx.Frame.__init__(self, parent, -1, APP_TITLE)
+        self.SetBackgroundColour(wx.Colour(224, 224, 224))
+        self.SetSize((320, 300))
+        self.Center()
+        
+        if hasattr(sys, "frozen") and getattr(sys, "frozen") == "windows_exe":
+            exeName = win32api.GetModuleFileName(win32api.GetModuleHandle(None))
+            icon = wx.Icon(exeName, wx.BITMAP_TYPE_ICO)
+        else :
+            icon = wx.Icon(APP_ICON, wx.BITMAP_TYPE_ICO)
+        self.SetIcon(icon)
+        
+        #font = wx.Font(24, wx.DECORATIVE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, 'Comic Sans MS')
+        font = wx.Font(30, wx.DECORATIVE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, 'Monaco')
+        
+        self.clock = wx.StaticText(self, -1, u'08:00:00', pos=(50,50), size=(200,50), style=wx.TE_CENTER|wx.SUNKEN_BORDER)
+        self.clock.SetForegroundColour(wx.Colour(0, 224, 32))
+        self.clock.SetBackgroundColour(wx.Colour(0, 0, 0))
+        self.clock.SetFont(font)
+        
+        self.stopwatch = wx.StaticText(self, -1, u'0:00:00.0', pos=(50,150), size=(200,50), style=wx.TE_CENTER|wx.SUNKEN_BORDER)
+        self.stopwatch.SetForegroundColour(wx.Colour(0, 224, 32))
+        self.stopwatch.SetBackgroundColour(wx.Colour(0, 0, 0))
+        self.stopwatch.SetFont(font)
+        
+        self.timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
+        self.timer.Start(50)
+        
+        self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
+        
+        self.sec_last = None
+        self.is_start = False
+        self.t_start = None
+        
+        thread_sw = threading.Thread(target=self.StopWatchThread)
+        thread_sw.setDaemon(True)
+        thread_sw.start()
+        
+    def OnTimer(self, evt):
+        '''定时器函数'''
+        
+        t = time.localtime()
+        if t.tm_sec != self.sec_last:
+            self.clock.SetLabel('%02d:%02d:%02d'%(t.tm_hour, t.tm_min, t.tm_sec))
+            self.sec_last = t.tm_sec
+        
+    def OnKeyDown(self, evt):
+        '''键盘事件函数'''
+        
+        if evt.GetKeyCode() == wx.WXK_SPACE:
+            self.is_start = not self.is_start
+            self.t_start= time.time()
+        elif evt.GetKeyCode() == wx.WXK_ESCAPE:
+            self.is_start = False
+            self.stopwatch.SetLabel('0:00:00.0')
+        
+    def StopWatchThread(self):
+        '''线程函数'''
+        
+        while True:
+            if self.is_start:
+                n = int(10*(time.time() - self.t_start))
+                deci = n%10
+                ss = int(n/10)%60
+                mm = int(n/600)%60
+                hh = int(n/36000)
+                wx.CallAfter(self.stopwatch.SetLabel, '%d:%02d:%02d.%d'%(hh, mm, ss, deci))
+            time.sleep(0.02)
+        
+class mainApp(wx.App):
     def OnInit(self):
-        """主应用程序初始化回调函数"""
-
         self.SetAppName(APP_TITLE)
-        self.frame = MainFrame(None)
-        self.frame.Show()
-
+        self.Frame = mainFrame(None)
+        self.Frame.Show()
         return True
 
-    def GetMainFrame(self):
-        """取得主框架"""
-
-        return self.frame
-
-
-def main(debug=True):
-    if debug:
-        fp = open("debug.txt", "w")
-        fp.close()
-        app = MainApp(redirect=True, filename="debug.txt")
-    else:
-        app = MainApp()
-
+if __name__ == "__main__":
+    app = mainApp()
     app.MainLoop()
-
-   
-if __name__ == '__main__':
-    main(False)

@@ -20,7 +20,17 @@ class MainFrame(wx.Frame):
         # 创建静态图片控件，并绑定鼠标左键点击事件
         bmp = wx.Bitmap(os.path.join("res", "forever.png"))
         sb = wx.StaticBitmap(panel, -1, bmp, pos=(280, 10))
-        sb.Bind(wx.EVT_LEFT_DOWN, self.OnBitmapClick)
+        sb.Bind(wx.EVT_LEFT_DOWN, self.OnBitmapLeftDown)           # 鼠标左键按下事件
+        sb.Bind(wx.EVT_LEFT_UP, self.OnBitmapLeftUp)               # 鼠标左键抬起事件
+        sb.Bind(wx.EVT_LEFT_DCLICK, self.OnBitmapLeftDclick)       # 鼠标左键双击事件
+
+        sb.Bind(wx.EVT_RIGHT_DOWN, self.OnBitmapRightDown)         # 鼠标右键按下事件
+        sb.Bind(wx.EVT_RIGHT_UP, self.OnBitmapRightUp)             # 鼠标右键抬起事件
+        sb.Bind(wx.EVT_RIGHT_DCLICK, self.OnBitmapRightDclick)     # 鼠标右键双击事件
+
+        sb.Bind(wx.EVT_MOTION, self.OnBitmapMotion)                # 鼠标移动事件
+        sb.Bind(wx.EVT_LEAVE_WINDOW, self.OnLeaveBitmapWindow)     # 鼠标移出事件
+        sb.Bind(wx.EVT_MOUSEWHEEL, self.OnBitmapMouseWheel)        # 鼠标滚轮事件
 
         # 创建文本输入框，并绑定输入变化事件
         tc1 = wx.TextCtrl(panel, -1, pos=(20, 50), size=(260, -1), name="输入框")
@@ -54,13 +64,62 @@ class MainFrame(wx.Frame):
         btn = wx.Button(panel, -1, "按钮", pos=(20, 190))
         btn.Bind(wx.EVT_BUTTON, self.OnButton)
 
+        # 创建静态文本，用于显示鼠标在图片上的位置
+        self.pos = wx.StaticText(panel, -1, "x:--- y:---", pos=(150, 195))
+
         # 创建多行文本框，显示触发的事件
         self.evtlog = wx.TextCtrl(panel, -1, pos=(20, 230), size=(260, 150), style=wx.TE_MULTILINE | wx.CB_READONLY)
 
-    def OnBitmapClick(self, evt):
-        """在StaticBitmap控件上点击左键事件处理"""
+        # 为MainFrame绑定窗口最大化事件
+        self.Bind(wx.EVT_MAXIMIZE, self.OnMaximize)
 
-        self.evtlog.AppendText("左键点击图片\n")
+    def OnBitmapLeftDown(self, evt):
+        """左键按下事件处理"""
+
+        self.evtlog.AppendText("左键按下\n")
+
+    def OnBitmapLeftUp(self, evt):
+        """左键抬起事件处理"""
+
+        self.evtlog.AppendText("左键抬起\n")
+
+    def OnBitmapLeftDclick(self, evt):
+        """左键双击事件处理"""
+
+        self.evtlog.AppendText("左键双击\n")
+
+    def OnBitmapRightDown(self, evt):
+        """右键按下事件处理"""
+
+        self.evtlog.AppendText("右键按下\n")
+
+    def OnBitmapRightUp(self, evt):
+        """右键抬起事件处理"""
+
+        self.evtlog.AppendText("右键抬起\n")
+
+    def OnBitmapRightDclick(self, evt):
+        """右键双击事件处理"""
+
+        self.evtlog.AppendText("右键双击\n")
+
+    def OnBitmapMotion(self, evt):
+        """鼠标移动事件处理"""
+
+        self.pos.SetLabel("x:%03d y:%03d" % (evt.x, evt.y))
+
+    def OnLeaveBitmapWindow(self, evt):
+        """鼠标移出图片事件处理"""
+
+        self.pos.SetLabel("x:--- y:---")
+    
+    def OnBitmapMouseWheel(self, evt):
+        """鼠标滚轴事件处理"""
+
+        if evt.WheelRotation > 0:
+            self.evtlog.AppendText("滚轮向上\n")
+        else:
+            self.evtlog.AppendText("滚轮向下\n")
 
     def OnTextChange(self, evt):
         """文本框输入变化事件处理"""
@@ -88,6 +147,10 @@ class MainFrame(wx.Frame):
 
         self.evtlog.AppendText("按钮被点击\n")
 
+    def OnMaximize(self, evt):
+        """窗口最大化事件"""
+
+        self.evtlog.AppendText("窗口最大化\n")
 
 class MainApp(wx.App):
 
