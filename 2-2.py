@@ -26,9 +26,9 @@ class MainFrame(wx.Frame):
         tc1 = wx.TextCtrl(panel, -1, pos=(20, 50), size=(260, -1), name="输入框")
         tc1.Bind(wx.EVT_TEXT, self.OnTextChange)
 
-        # 创建密码输入框，并绑定与上一个文件同一个事件函数
+        # 创建密码输入框，并使用第二种方式绑定
         tc2 = wx.TextCtrl(panel, -1, pos=(20, 90), style=wx.TE_PASSWORD, name="密码输入框")
-        tc2.Bind(wx.EVT_TEXT, self.OnTextChange)
+        self.Bind(wx.EVT_TEXT, self.OnTextChange, tc2)
 
         # 创建单选按钮，并绑定选择事件
         rb1 = wx.RadioButton(panel, -1, "单选按钮1", pos=(20, 130), style=wx.RB_GROUP, name="rb1")
