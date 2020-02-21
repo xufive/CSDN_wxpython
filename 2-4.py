@@ -58,6 +58,12 @@ class MainFrame(wx.Frame):
             # 将字体应用到文本框
             self.tc.SetFont(font)
 
+            # 取得颜色设置
+            colour = data.GetColour()
+
+            # 将颜色应用于文本框
+            self.tc.SetForegroundColour(colour)
+
 class MainApp(wx.App):
 
     def OnInit(self):
