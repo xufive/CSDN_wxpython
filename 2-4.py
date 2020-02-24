@@ -7,8 +7,7 @@ class MainFrame(wx.Frame):
 
     def __init__(self, parent):
 
-        wx.Frame.__init__(self, parent, -1, "Hello World", 
-            size=(800, 600), style=wx.DEFAULT_FRAME_STYLE)
+        wx.Frame.__init__(self, parent, -1, "Hello World", size=(800, 600), style=wx.DEFAULT_FRAME_STYLE)
 
         # 创建一个面板，用于放置控件
         panel = wx.Panel(self, -1)

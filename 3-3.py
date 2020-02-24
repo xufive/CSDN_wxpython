@@ -69,7 +69,7 @@ class MainFrame(wx.Frame):
         professional.SetSelection(0)
         sizer.Add(professional, (3, 1), (1, 3), flag=wx.EXPAND)     # 在第3行1列，跨3列
 
-        # 已会语言
+        # 语言技能
         st = wx.StaticText(panel, -1, "语言技能")
         sizer.Add(st, (4, 0), flag=wx.ALIGN_RIGHT | wx.LEFT, border=20)      # 在第4行0列，距离左边缘20像素，居右
 

@@ -1,12 +1,11 @@
 #-*- coding: utf-8 -*-
 
 import wx
-import win32api
 import sys, os, time
 import threading
 
 APP_TITLE = u'定时器和线程'
-APP_ICON = 'res/python.ico'
+APP_ICON = 'res/wx.ico'
 
 class mainFrame(wx.Frame):
     '''程序主窗口类，继承自wx.Frame'''
@@ -15,39 +14,33 @@ class mainFrame(wx.Frame):
         '''构造函数'''
         
         wx.Frame.__init__(self, parent, -1, APP_TITLE)
-        self.SetBackgroundColour(wx.Colour(224, 224, 224))
-        self.SetSize((320, 300))
-        self.Center()
+        self.SetBackgroundColour(wx.Colour(224, 224, 224)) # 设置窗口背景色
+        self.SetSize((320, 300)) # 设置窗口大小
+        self.Center() # 设置窗口居中
         
-        if hasattr(sys, "frozen") and getattr(sys, "frozen") == "windows_exe":
-            exeName = win32api.GetModuleFileName(win32api.GetModuleHandle(None))
-            icon = wx.Icon(exeName, wx.BITMAP_TYPE_ICO)
-        else :
-            icon = wx.Icon(APP_ICON, wx.BITMAP_TYPE_ICO)
-        self.SetIcon(icon)
+        icon = wx.Icon(APP_ICON, wx.BITMAP_TYPE_ICO)
+        self.SetIcon(icon) # 设置窗口图标
         
-        #font = wx.Font(24, wx.DECORATIVE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, 'Comic Sans MS')
-        font = wx.Font(30, wx.DECORATIVE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, 'Monaco')
+        font = wx.Font(30, wx.DECORATIVE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, 'Monaco') # 定义字体字号
         
         self.clock = wx.StaticText(self, -1, u'08:00:00', pos=(50,50), size=(200,50), style=wx.TE_CENTER|wx.SUNKEN_BORDER)
-        self.clock.SetForegroundColour(wx.Colour(0, 224, 32))
-        self.clock.SetBackgroundColour(wx.Colour(0, 0, 0))
-        self.clock.SetFont(font)
+        self.clock.SetBackgroundColour(wx.Colour(0, 0, 0)) # 设置时钟背景色
+        self.clock.SetForegroundColour(wx.Colour(0, 224, 32)) # 设置时钟前景色
+        self.clock.SetFont(font) # 设置时钟字体字号
         
         self.stopwatch = wx.StaticText(self, -1, u'0:00:00.0', pos=(50,150), size=(200,50), style=wx.TE_CENTER|wx.SUNKEN_BORDER)
-        self.stopwatch.SetForegroundColour(wx.Colour(0, 224, 32))
-        self.stopwatch.SetBackgroundColour(wx.Colour(0, 0, 0))
-        self.stopwatch.SetFont(font)
+        self.stopwatch.SetBackgroundColour(wx.Colour(0, 0, 0)) # 设置秒表背景色
+        self.stopwatch.SetForegroundColour(wx.Colour(0, 224, 32)) # 设置秒表前景色
+        self.stopwatch.SetFont(font) # 设置秒表字体字号
         
-        self.timer = wx.Timer(self)
-        self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
-        self.timer.Start(50)
+        self.timer = wx.Timer(self) # 创建定时器
+        self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer) # 绑定定时器事件
+        self.timer.Start(100, oneShot=False) # 启动定时器，间隔100ms；若oneShot为真，则只启动一次
         
-        self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
+        self.is_start = False # 秒表是否启动
+        self.t_start = None # 秒表启动时间
         
-        self.sec_last = None
-        self.is_start = False
-        self.t_start = None
+        self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown) # 绑定键盘事件
         
         thread_sw = threading.Thread(target=self.StopWatchThread)
         thread_sw.setDaemon(True)
@@ -57,9 +50,7 @@ class mainFrame(wx.Frame):
         '''定时器函数'''
         
         t = time.localtime()
-        if t.tm_sec != self.sec_last:
-            self.clock.SetLabel('%02d:%02d:%02d'%(t.tm_hour, t.tm_min, t.tm_sec))
-            self.sec_last = t.tm_sec
+        self.clock.SetLabel('%02d:%02d:%02d'%(t.tm_hour, t.tm_min, t.tm_sec))
         
     def OnKeyDown(self, evt):
         '''键盘事件函数'''

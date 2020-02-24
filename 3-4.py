@@ -1,105 +1,111 @@
-#!/usr/bin/env python
-# coding:utf-8
-
-"""
-使用ClientDC绘图
-"""
+#-*- coding: utf-8 -*-
 
 import wx
+import os
 
-class MainFrame(wx.Frame):
+APP_TITLE = u'使用DC绘图'
+APP_ICON = 'res/wx.ico'
 
+class mainFrame(wx.Frame):
+    '''程序主窗口类，继承自wx.Frame'''
+    
     def __init__(self, parent):
-
-        wx.Frame.__init__(self, parent, -1, "Hello World", 
-            size=(800, 600), style=wx.DEFAULT_FRAME_STYLE)
-
-        # 创建面板
-        panel = wx.Panel(self, -1)
-
-        # 创建Sizer
-        sizer = wx.BoxSizer()
-
-        # 创建用于绘图的面板
-        self.palette = wx.Panel(panel, -1, style=wx.SUNKEN_BORDER)
-        self.palette.Bind(wx.EVT_MOTION, self.OnMotion)
-        sizer.Add(self.palette, 1, wx.EXPAND | wx.ALL ^ wx.RIGHT, 10)
-
-        # 创建演示按钮
-        btn = wx.Button(panel, -1, "基本方法")
-        btn.Bind(wx.EVT_BUTTON, self.OnBase)
-        sizer.Add(btn, 0, wx.ALL, 10)
-
-        # 界面总成
-        panel.SetSizer(sizer)
-        panel.Layout()
-
-        self.pos = None     # 用于保存鼠标上一次的位置
-
-
-    def OnBase(self, evt):
-        """基本方法按钮点击事件处理"""
-                
-        # 创建ClientDC
-        dc = wx.ClientDC(self.palette)
-
-        dc.Clear()
+        '''构造函数'''
         
-        # 加载图片
-        bmp = wx.Bitmap('res/forever.png', wx.BITMAP_TYPE_ANY)
-
-        # 绘制Bitmap
-        dc.DrawBitmap(bmp, 100, 50)
-
-        # 设置画笔和画刷
-        dc.SetPen(wx.Pen(wx.Colour(224,0,0), 1))
-        dc.SetBrush(wx.TRANSPARENT_BRUSH)
-
-        w, h = self.palette.GetSize()        
-        dc.DrawRectangle(10,10,w-22,h-22)       # 画矩形        
-        dc.DrawLine(10,h/2,w-12,h/2)            # 画线
-
-        dc.SetTextForeground(wx.GREEN)
+        wx.Frame.__init__(self, parent, -1, APP_TITLE)
+        self.SetBackgroundColour(wx.Colour(224, 224, 224))
+        self.SetSize((800, 600))
+        self.Center()
+        
+        icon = wx.Icon(APP_ICON, wx.BITMAP_TYPE_ICO)
+        self.SetIcon(icon)
+        
+        self.palette = wx.Panel(self, -1, style=wx.SUNKEN_BORDER)
+        self.palette.SetBackgroundColour(wx.Colour(0, 0, 0))
+        btn_base = wx.Button(self, -1, u'基本方法', size=(100, -1))
+        
+        sizer_max = wx.BoxSizer()
+        sizer_max.Add(self.palette, 1, wx.EXPAND|wx.LEFT|wx.TOP|wx.BOTTOM, 5)
+        sizer_max.Add(btn_base, 0, wx.ALL, 20)
+        
+        self.SetAutoLayout(True)
+        self.SetSizer(sizer_max)
+        self.Layout()
+        
+        btn_base.Bind(wx.EVT_BUTTON, self.OnBase)
+        self.palette.Bind(wx.EVT_MOUSE_EVENTS, self.OnMouse)
+        self.palette.Bind(wx.EVT_PAINT, self.OnPaint)
+        
+        self.xy = None # 鼠标画线的起点
+        self.lines = list() # 保存鼠标化的线
+        self.img = wx.Bitmap('res/forever.png', wx.BITMAP_TYPE_ANY)
+        
+    def OnMouse(self, evt):
+        '''移动鼠标画线'''
+        
+        if evt.EventType == wx.EVT_LEFT_DOWN.evtType[0]: #左键按下
+            self.xy = (evt.x, evt.y)
+        elif evt.EventType == wx.EVT_LEFT_UP.evtType[0]: #左键弹起
+            self.xy = None
+        elif evt.EventType == wx.EVT_MOTION.evtType[0]: #鼠标移动
+            if self.xy:
+                dc = wx.ClientDC(self.palette)
+                dc.SetPen(wx.Pen(wx.Colour(0,224,0), 2))
+                dc.DrawLine(self.xy[0], self.xy[1], evt.x, evt.y)
+                self.lines.append((self.xy[0], self.xy[1], evt.x, evt.y))
+                self.xy = (evt.x, evt.y)
+        
+    def OnBase(self, evt):
+        '''DC基本方法演示'''
+        
+        w, h = self.palette.GetSize()
+        
+        dc = wx.ClientDC(self.palette) # 创建DC
+        dc.SetBrush(wx.Brush(wx.Colour(0,80,80) )) # 设置画刷
+        dc.SetPen(wx.Pen(wx.Colour(224,0,0), 1)) # 设置画笔
+        dc.DrawRectangle(10,10,w-22,h-22) # 画矩形
+        
+        dc.SetPen(wx.Pen(wx.Colour(0,224,224), 1)) # 设置画笔
+        dc.DrawLine(10,h/2,w-12,h/2) # 画线
+        
+        dc.DrawBitmap(self.img, 80, 30) # 画位图
+        
+        dc.SetTextForeground(wx.Colour(224,224,224)) # 设置文本颜色
         dc.SetFont(wx.Font(16, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, 'Comic Sans MS'))
         dc.DrawText(u'霜重闲愁起', 100, 500)
         dc.DrawRotatedText(u'春深风也疾', 250, 500, 30)
-
-    def OnMotion(self, evt):
-        """鼠标移动事件处理"""
-
-        # 判断鼠标左键的状态
-        if evt.LeftIsDown():
-            # 判断是否保存了上一次的位置
-            if self.pos:
-                # 创建ClientDC
-                dc = wx.ClientDC(self.palette)
-
-                # 设置画笔
-                dc.SetPen(wx.Pen(wx.Colour(224,0,0), 1))
-
-                # 画线
-                dc.DrawLine(self.pos[0], self.pos[1], evt.x, evt.y) 
-            
-            # 保存本次位置
-            self.pos = (evt.x, evt.y)
-        else:
-            # 清空保存的位置
-            self.pos = None
-
-
-class MainApp(wx.App):
-
+        
+    def OnPaint(self, evt):
+        '''重绘事件函数'''
+        
+        w, h = self.palette.GetSize()
+        dc = wx.PaintDC(self.palette)
+        
+        dc.SetBrush(wx.Brush(wx.Colour(0,80,80) ))
+        dc.SetPen(wx.Pen(wx.Colour(224,0,0), 1))
+        dc.DrawRectangle(10,10,w-22,h-22)
+        
+        dc.SetPen(wx.Pen(wx.Colour(0,224,224), 1))
+        dc.DrawLine(10,h/2,w-12,h/2)
+        
+        dc.DrawBitmap(self.img, 80, 30)
+        
+        dc.SetTextForeground(wx.Colour(224,224,224))
+        dc.SetFont(wx.Font(16, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, 'Comic Sans MS'))
+        dc.DrawText(u'霜重闲愁起', 100, 500)
+        dc.DrawRotatedText(u'春深风也疾', 250, 500, 30)
+        
+        dc.SetPen(wx.Pen(wx.Colour(0,224,0), 2))
+        for line in self.lines:
+            dc.DrawLine(line[0],line[1],line[2],line[3])
+    
+class mainApp(wx.App):
     def OnInit(self):
-
-        self.SetAppName("Hello World")
-        self.frame = MainFrame(None)
-        self.frame.Show()
-
+        self.SetAppName(APP_TITLE)
+        self.Frame = mainFrame(None)
+        self.Frame.Show()
         return True
 
-def main():
-    app = MainApp()
+if __name__ == "__main__":
+    app = mainApp()
     app.MainLoop()
-   
-if __name__ == '__main__':
-    main()

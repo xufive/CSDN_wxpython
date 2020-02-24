@@ -8,14 +8,15 @@ class MainFrame(wx.Frame):
 
     def __init__(self, parent):
 
-        wx.Frame.__init__(self, parent, -1, "wxPython控件演示", 
-            size=(780, 450), style=wx.DEFAULT_FRAME_STYLE)
+        wx.Frame.__init__(self, parent, -1, "wxPython控件演示", style=wx.DEFAULT_FRAME_STYLE)
+        self.SetSize((780, 450)) # wx.Frame用于设置窗口大小的方法
+        self.Center() # wx.Frame用于设置窗口屏幕居中的方法
 
         # 创建一个面板，用于放置控件
         panel = wx.Panel(self, -1)
 
         # 创建静态文本控件
-        st = wx.StaticText(panel, -1, "Hello wxPython", pos=(20, 20))
+        self.notice = wx.StaticText(panel, -1, "Hello wxPython", pos=(20, 20))
 
         # 创建静态图片控件，并绑定鼠标左键点击事件
         bmp = wx.Bitmap(os.path.join("res", "forever.png"))
@@ -64,9 +65,6 @@ class MainFrame(wx.Frame):
         btn = wx.Button(panel, -1, "按钮", pos=(20, 190))
         btn.Bind(wx.EVT_BUTTON, self.OnButton)
 
-        # 创建静态文本，用于显示鼠标在图片上的位置
-        self.pos = wx.StaticText(panel, -1, "x:--- y:---", pos=(150, 195))
-
         # 创建多行文本框，显示触发的事件
         self.evtlog = wx.TextCtrl(panel, -1, pos=(20, 230), size=(260, 150), style=wx.TE_MULTILINE | wx.CB_READONLY)
 
@@ -106,12 +104,12 @@ class MainFrame(wx.Frame):
     def OnBitmapMotion(self, evt):
         """鼠标移动事件处理"""
 
-        self.pos.SetLabel("x:%03d y:%03d" % (evt.x, evt.y))
+        self.notice.SetLabel("x:%03d y:%03d" % (evt.x, evt.y))
 
     def OnLeaveBitmapWindow(self, evt):
         """鼠标移出图片事件处理"""
 
-        self.pos.SetLabel("x:--- y:---")
+        self.notice.SetLabel("Hello wxPython")
     
     def OnBitmapMouseWheel(self, evt):
         """鼠标滚轴事件处理"""

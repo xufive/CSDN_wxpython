@@ -29,18 +29,18 @@ class MainFrame(wx.Frame):
         self.tc.Enable(False)
         self.tc.Bind(wx.EVT_RIGHT_UP, self.OnRightUp)
 
-        self.file = ""        
+        self.curr_file = "" # 当前文件
 
         # 创建菜单栏
-        self.CreateMenuBar()
+        self.__CreateMenuBar()
 
         # 创建工具栏
-        self.CreateToolBar()
+        self.__CreateToolBar()
 
         # 创建状态栏
-        self.CreateStatusBar()
+        self.__CreateStatusBar()
 
-    def CreateMenuBar(self):
+    def __CreateMenuBar(self):
         """创建菜单栏"""
 
         # 创建菜单栏
@@ -74,11 +74,10 @@ class MainFrame(wx.Frame):
         theme = wx.Menu()
         
         bw = wx.MenuItem(theme, wx.NewIdRef(), "黑底白字(&B)", "设置显示主题为黑底白字", kind=wx.ITEM_RADIO)
-        theme.Append(bw)
         wb = wx.MenuItem(theme, wx.NewIdRef(), "白底黑字(&B)", "设置显示主题为白底黑字", kind=wx.ITEM_RADIO)
+        theme.Append(bw)
         theme.Append(wb)
-
-        config.Append(wx.NewIdRef(), "主题(&T)", theme)
+        config.AppendSubMenu(theme, "主题(&T)", )
 
         option = wx.Menu()        
         option.Append(wx.NewIdRef(), "自动保存(&A)", "设置是否开启自动保存", kind=wx.ITEM_CHECK)
@@ -94,7 +93,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnSave, id=wx.ID_SAVE)
         self.Bind(wx.EVT_MENU, self.OnExit, id=wx.ID_EXIT)
 
-    def CreateToolBar(self):
+    def __CreateToolBar(self):
         """创建工具栏"""
 
         # 创建工具栏
@@ -131,7 +130,7 @@ class MainFrame(wx.Frame):
         # 为窗口设置工具栏
         self.SetToolBar(tb)
 
-    def CreateStatusBar(self):
+    def __CreateStatusBar(self):
         """创建状态栏"""
 
         self.sb = wx.StatusBar(self, -1)
@@ -149,19 +148,19 @@ class MainFrame(wx.Frame):
         dlg = wx.FileDialog(self, "打开文件", wildcard="文本文件|*.txt")
 
         if dlg.ShowModal() == wx.ID_OK:
-            self.file = dlg.GetPath()
+            self.curr_file = dlg.GetPath()
 
             # 加载文件
-            self.tc.LoadFile(self.file)
+            self.tc.LoadFile(self.curr_file)
             self.tc.Enable(True)
 
             # 设置状态栏
-            self.sb.SetStatusText(self.file, 1)
+            self.sb.SetStatusText(self.curr_file, 1)
 
     def OnSave(self, evt):
         """保存文件事件处理"""
 
-        self.tc.SaveFile(self.file)
+        self.tc.SaveFile(self.curr_file)
 
     def OnExit(self, evt):
         """退出事件处理"""
@@ -178,15 +177,14 @@ class MainFrame(wx.Frame):
         theme = wx.Menu()
         
         bw = wx.MenuItem(theme, wx.NewIdRef(), "黑底白字(&B)", kind=wx.ITEM_RADIO)
-        theme.Append(bw)
         wb = wx.MenuItem(theme, wx.NewIdRef(), "白底黑字(&B)", kind=wx.ITEM_RADIO)
+        theme.Append(bw)
         theme.Append(wb)
-
-        config.Append(wx.NewIdRef(), "主题(&T)", theme)
+        config.AppendSubMenu(theme, "主题(&T)")
 
         option = wx.Menu()        
         option.Append(wx.NewIdRef(), "自动保存(&A)", kind=wx.ITEM_CHECK)
-        config.Append(wx.NewIdRef(), "首选项(&O)", option)
+        config.AppendSubMenu(option, "首选项(&O)")
 
         self.PopupMenu(config)
 

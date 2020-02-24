@@ -21,7 +21,7 @@ class MainFrame(wx.Frame):
         """
 
         # 初始化父类
-        wx.Frame.__init__(self, parent, -1, APP_TITLE, size=(200, 100), style=wx.DEFAULT_FRAME_STYLE)
+        wx.Frame.__init__(self, parent, -1, APP_TITLE, size=(600, 400), style=wx.DEFAULT_FRAME_STYLE)
 
         # 初始化面板
         panel = wx.Panel(self, -1)
